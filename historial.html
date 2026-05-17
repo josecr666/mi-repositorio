@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediSync — Historial Médico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="medisync.css" />
+  <style>
+    .historial-layout { display: grid; grid-template-columns: 1fr 300px; gap: var(--space-6); }
+    .record-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: var(--space-4);
+      transition: box-shadow 150ms;
+    }
+    .record-card:hover { box-shadow: var(--shadow-md); }
+    .record-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--gray-100);
+      cursor: pointer;
+    }
+    .record-body { padding: var(--space-5); display: none; }
+    .record-body.open { display: block; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    .detail-item { font-size: 13px; }
+    .detail-label { color: var(--gray-400); font-weight: 600; text-transform: uppercase; font-size: 11px; margin-bottom: 3px; }
+    .detail-value { color: var(--gray-900); font-size: 14px; }
+    .export-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--primary-600);
+      color: white;
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-6);
+      margin-bottom: var(--space-6);
+    }
+    .vitals-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-3); margin-bottom: var(--space-6); }
+    .vital-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      text-align: center;
+    }
+    .vital-icon { font-size: 20px; margin-bottom: 4px; }
+    .vital-val { font-size: 22px; font-weight: 700; color: var(--gray-900); }
+    .vital-unit { font-size: 11px; color: var(--gray-400); }
+    .vital-label { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+    @media (max-width: 1000px) { .historial-layout { grid-template-columns: 1fr; } .vitals-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 600px) { .detail-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" role="navigation">
+    <div class="sidebar-logo">
+      <div class="logo-icon">✚</div>
+      <span class="logo-text">MediSync</span>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-title">Principal</span>
+      <a class="nav-link" href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-link" href="agendar.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Agendar cita
+      </a>
+      <a class="nav-link active" href="historial.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6M9 16h6M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M13 2v7h7"/></svg>
+        Historial médico
+      </a>
+      <span class="nav-section-title">Cuenta</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Mi perfil
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar">AG</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--gray-900);">Ana Gómez</div>
+        <div style="font-size:12px;color:var(--gray-400);">Paciente</div>
+      </div>
+      <a href="index.html" style="margin-left:auto;color:var(--gray-400);font-size:12px;">Salir</a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <h1 style="font-size:20px;font-weight:700;">Historial médico</h1>
+        <p style="font-size:13px;color:var(--gray-500);margin-top:2px;">Registro clínico completo — Ana Gómez</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="btn btn-primary" onclick="showToast('Generando PDF…','')">
+          📄 Exportar PDF
+        </button>
+        <div class="avatar">AG</div>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <!-- EXPORT BAR -->
+      <div class="export-bar">
+        <div>
+          <div style="font-weight:700;font-size:15px;">🗂️ Historial clínico digital</div>
+          <div style="font-size:13px;opacity:0.85;">7 registros · Actualizado: 2 mayo 2026</div>
+        </div>
+        <div style="display:flex;gap:var(--space-3);">
+          <button class="btn btn-secondary" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;" onclick="showToast('Compartiendo con médico…','')">Compartir con médico</button>
+          <button class="btn" style="background:white;color:var(--primary-700);font-weight:700;" onclick="showToast('PDF generado. Descargando…','success')">⬇ Descargar PDF</button>
+        </div>
+      </div>
+
+      <!-- VITALES RECIENTES -->
+      <h2 style="font-size:16px;font-weight:700;margin-bottom:var(--space-4);">Signos vitales recientes</h2>
+      <div class="vitals-grid">
+        <div class="vital-card">
+          <div class="vital-icon">❤️</div>
+          <div class="vital-val">72</div>
+          <div class="vital-unit">lpm</div>
+          <div class="vital-label">Frecuencia cardiaca</div>
+          <div style="margin-top:6px;"><span class="badge badge-success" style="font-size:10px;">Normal</span></div>
+        </div>
+        <div class="vital-card">
+          <div class="vital-icon">🩸</div>
+          <div class="vital-val">130/85</div>
+          <div class="vital-unit">mmHg</div>
+          <div class="vital-label">Presión arterial</div>
+          <div style="margin-top:6px;"><span class="badge badge-warning" style="font-size:10px;">Leve alto</span></div>
+        </div>
+        <div class="vital-card">
+          <div class="vital-icon">⚖️</div>
+          <div class="vital-val">63</div>
+          <div class="vital-unit">kg</div>
+          <div class="vital-label">Peso</div>
+          <div style="margin-top:6px;"><span class="badge badge-success" style="font-size:10px;">Normal</span></div>
+        </div>
+        <div class="vital-card">
+          <div class="vital-icon">🌡️</div>
+          <div class="vital-val">36.6</div>
+          <div class="vital-unit">°C</div>
+          <div class="vital-label">Temperatura</div>
+          <div style="margin-top:6px;"><span class="badge badge-success" style="font-size:10px;">Normal</span></div>
+        </div>
+      </div>
+
+      <div class="historial-layout">
+        <!-- TIMELINE -->
+        <div>
+          <!-- TABS -->
+          <div class="tabs mb-6" role="tablist">
+            <button class="tab-btn active" role="tab" aria-selected="true" onclick="filterTab(this,'all')">Todos (7)</button>
+            <button class="tab-btn" role="tab" onclick="filterTab(this,'consulta')">Consultas (4)</button>
+            <button class="tab-btn" role="tab" onclick="filterTab(this,'examen')">Exámenes (2)</button>
+            <button class="tab-btn" role="tab" onclick="filterTab(this,'medicamento')">Medicamentos (1)</button>
+          </div>
+
+          <!-- SEARCH & FILTER ROW -->
+          <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-5);">
+            <div class="search-bar" style="flex:1;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="search" placeholder="Buscar en historial…" />
+            </div>
+            <select class="input" style="width:auto;min-height:44px;padding:0 14px;">
+              <option>2026</option><option>2025</option><option>2024</option>
+            </select>
+          </div>
+
+          <!-- RECORDS -->
+          <div id="records">
+
+            <div class="record-card" data-type="consulta">
+              <div class="record-header" onclick="toggleRecord(this)">
+                <div style="display:flex;align-items:center;gap:var(--space-4);">
+                  <div style="width:44px;height:44px;background:var(--primary-100);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;">🩺</div>
+                  <div>
+                    <div style="font-size:15px;font-weight:700;">Consulta — Medicina General</div>
+                    <div style="font-size:13px;color:var(--gray-500);">2 mayo 2026 · Dra. Laura Torres</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <span class="badge badge-success">Completada</span>
+                  <span style="color:var(--gray-400);">▼</span>
+                </div>
+              </div>
+              <div class="record-body open">
+                <div class="detail-grid mb-4">
+                  <div class="detail-item"><div class="detail-label">Diagnóstico</div><div class="detail-value">Hipertensión arterial leve (I10)</div></div>
+                  <div class="detail-item"><div class="detail-label">Médico tratante</div><div class="detail-value">Dra. Laura Torres</div></div>
+                  <div class="detail-item"><div class="detail-label">Motivo</div><div class="detail-value">Control de presión arterial</div></div>
+                  <div class="detail-item"><div class="detail-label">Duración</div><div class="detail-value">30 minutos</div></div>
+                </div>
+                <div class="detail-item mb-4">
+                  <div class="detail-label">Notas del médico</div>
+                  <div class="detail-value" style="margin-top:4px;padding:12px;background:var(--gray-50);border-radius:var(--radius-md);font-size:14px;line-height:1.6;">
+                    Paciente refiere cefaleas ocasionales. PA: 130/85 mmHg. Se recomienda reducir ingesta de sodio, aumentar actividad física 30 min/día. Se inicia tratamiento con Losartán 50mg. Control en 4 semanas.
+                  </div>
+                </div>
+                <div class="detail-item mb-4">
+                  <div class="detail-label">Tratamiento prescrito</div>
+                  <div style="margin-top:4px;"><span class="badge badge-primary">Losartán 50mg — 1 vez al día</span></div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="showToast('Descargando resumen…','')">📄 Descargar resumen</button>
+              </div>
+            </div>
+
+            <div class="record-card" data-type="examen">
+              <div class="record-header" onclick="toggleRecord(this)">
+                <div style="display:flex;align-items:center;gap:var(--space-4);">
+                  <div style="width:44px;height:44px;background:#FEF3C7;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;">🔬</div>
+                  <div>
+                    <div style="font-size:15px;font-weight:700;">Laboratorio — Hemograma + Colesterol</div>
+                    <div style="font-size:13px;color:var(--gray-500);">18 abril 2026 · Lab. Clínica Santa Fe</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <span class="badge badge-success">Resultados listos</span>
+                  <span style="color:var(--gray-400);">▼</span>
+                </div>
+              </div>
+              <div class="record-body">
+                <div class="detail-grid mb-4">
+                  <div class="detail-item"><div class="detail-label">Hemoglobina</div><div class="detail-value">13.8 g/dL <span style="color:var(--secondary-500);font-size:12px;">✓ Normal</span></div></div>
+                  <div class="detail-item"><div class="detail-label">Hematocrito</div><div class="detail-value">41% <span style="color:var(--secondary-500);font-size:12px;">✓ Normal</span></div></div>
+                  <div class="detail-item"><div class="detail-label">Colesterol total</div><div class="detail-value">195 mg/dL <span style="color:var(--secondary-500);font-size:12px;">✓ Normal</span></div></div>
+                  <div class="detail-item"><div class="detail-label">Colesterol LDL</div><div class="detail-value">118 mg/dL <span style="color:var(--warning-500);font-size:12px;">⚠ Vigilar</span></div></div>
+                  <div class="detail-item"><div class="detail-label">Glucemia en ayunas</div><div class="detail-value">92 mg/dL <span style="color:var(--secondary-500);font-size:12px;">✓ Normal</span></div></div>
+                  <div class="detail-item"><div class="detail-label">Plaquetas</div><div class="detail-value">265,000 /μL <span style="color:var(--secondary-500);font-size:12px;">✓ Normal</span></div></div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="showToast('Descargando resultados…','')">📄 Descargar resultados</button>
+              </div>
+            </div>
+
+            <div class="record-card" data-type="consulta">
+              <div class="record-header" onclick="toggleRecord(this)">
+                <div style="display:flex;align-items:center;gap:var(--space-4);">
+                  <div style="width:44px;height:44px;background:var(--primary-100);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;">🩺</div>
+                  <div>
+                    <div style="font-size:15px;font-weight:700;">Consulta — Cardiología</div>
+                    <div style="font-size:13px;color:var(--gray-500);">10 marzo 2026 · Dr. Carlos Mendoza</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <span class="badge badge-success">Completada</span>
+                  <span style="color:var(--gray-400);">▼</span>
+                </div>
+              </div>
+              <div class="record-body">
+                <div class="detail-grid mb-4">
+                  <div class="detail-item"><div class="detail-label">Diagnóstico</div><div class="detail-value">Palpitaciones funcionales (R00.2)</div></div>
+                  <div class="detail-item"><div class="detail-label">EKG</div><div class="detail-value">Ritmo sinusal normal</div></div>
+                </div>
+                <div class="detail-item mb-4">
+                  <div class="detail-label">Notas del médico</div>
+                  <div class="detail-value" style="margin-top:4px;padding:12px;background:var(--gray-50);border-radius:var(--radius-md);font-size:14px;line-height:1.6;">
+                    EKG dentro de límites normales. Palpitaciones probablemente relacionadas con estrés. Se recomienda técnicas de relajación y evitar cafeína. No requiere tratamiento farmacológico.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="record-card" data-type="medicamento">
+              <div class="record-header" onclick="toggleRecord(this)">
+                <div style="display:flex;align-items:center;gap:var(--space-4);">
+                  <div style="width:44px;height:44px;background:#F3E8FF;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;">💊</div>
+                  <div>
+                    <div style="font-size:15px;font-weight:700;">Medicamento — Losartán 50mg</div>
+                    <div style="font-size:13px;color:var(--gray-500);">Inicio: 2 mayo 2026 · Dra. Torres</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <span class="badge badge-primary">Activo</span>
+                  <span style="color:var(--gray-400);">▼</span>
+                </div>
+              </div>
+              <div class="record-body">
+                <div class="detail-grid mb-4">
+                  <div class="detail-item"><div class="detail-label">Dosis</div><div class="detail-value">50mg — 1 vez al día</div></div>
+                  <div class="detail-item"><div class="detail-label">Vía</div><div class="detail-value">Oral</div></div>
+                  <div class="detail-item"><div class="detail-label">Horario</div><div class="detail-value">En la mañana con agua</div></div>
+                  <div class="detail-item"><div class="detail-label">Duración</div><div class="detail-value">Tratamiento crónico</div></div>
+                </div>
+                <div class="alert alert-warning" style="font-size:13px;">⚠️ Evitar uso con antiinflamatorios (AINES). Reportar mareos o hipotensión.</div>
+              </div>
+            </div>
+
+            <div class="record-card" data-type="examen">
+              <div class="record-header" onclick="toggleRecord(this)">
+                <div style="display:flex;align-items:center;gap:var(--space-4);">
+                  <div style="width:44px;height:44px;background:#FEF3C7;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;">📷</div>
+                  <div>
+                    <div style="font-size:15px;font-weight:700;">Radiografía de tórax</div>
+                    <div style="font-size:13px;color:var(--gray-500);">5 febrero 2026 · Radiología IPS Central</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <span class="badge badge-success">Resultados listos</span>
+                  <span style="color:var(--gray-400);">▼</span>
+                </div>
+              </div>
+              <div class="record-body">
+                <div class="detail-item mb-4">
+                  <div class="detail-label">Resultado</div>
+                  <div class="detail-value" style="margin-top:4px;padding:12px;background:var(--gray-50);border-radius:var(--radius-md);font-size:14px;line-height:1.6;">
+                    Campos pulmonares sin infiltrados, consolidaciones ni masas. Silueta cardiaca de tamaño normal. Índice cardiotorácico 0.48. Sin hallazgos patológicos significativos.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="record-card" data-type="consulta">
+              <div class="record-header" onclick="toggleRecord(this)">
+                <div style="display:flex;align-items:center;gap:var(--space-4);">
+                  <div style="width:44px;height:44px;background:var(--primary-100);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;">🩺</div>
+                  <div>
+                    <div style="font-size:15px;font-weight:700;">Consulta — Medicina General</div>
+                    <div style="font-size:13px;color:var(--gray-500);">12 noviembre 2025 · Dra. Laura Torres</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <span class="badge badge-success">Completada</span>
+                  <span style="color:var(--gray-400);">▼</span>
+                </div>
+              </div>
+              <div class="record-body">
+                <div class="detail-grid mb-4">
+                  <div class="detail-item"><div class="detail-label">Diagnóstico</div><div class="detail-value">Infección respiratoria alta (J06.9)</div></div>
+                  <div class="detail-item"><div class="detail-label">Tratamiento</div><div class="detail-value">Amoxicilina 500mg · 7 días</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="record-card" data-type="consulta">
+              <div class="record-header" onclick="toggleRecord(this)">
+                <div style="display:flex;align-items:center;gap:var(--space-4);">
+                  <div style="width:44px;height:44px;background:var(--primary-100);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;">🩺</div>
+                  <div>
+                    <div style="font-size:15px;font-weight:700;">Consulta — Examen preventivo anual</div>
+                    <div style="font-size:13px;color:var(--gray-500);">3 enero 2025 · Dra. Laura Torres</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <span class="badge badge-success">Completada</span>
+                  <span style="color:var(--gray-400);">▼</span>
+                </div>
+              </div>
+              <div class="record-body">
+                <div class="detail-grid">
+                  <div class="detail-item"><div class="detail-label">Resultado</div><div class="detail-value">Sin hallazgos patológicos</div></div>
+                  <div class="detail-item"><div class="detail-label">Vacunas</div><div class="detail-value">Influenza estacional al día</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL DERECHO -->
+        <div class="flex flex-col gap-6">
+          <div class="card">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:var(--space-4);">📊 Resumen de salud</h3>
+            <div class="flex flex-col gap-3" style="font-size:13px;">
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray-500);">Total de consultas</span><strong>18</strong></div>
+              <div class="divider"></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray-500);">Consultas 2026</span><strong>4</strong></div>
+              <div class="divider"></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray-500);">Exámenes realizados</span><strong>7</strong></div>
+              <div class="divider"></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray-500);">Medicamentos activos</span><strong>2</strong></div>
+              <div class="divider"></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray-500);">Alergias registradas</span><strong style="color:var(--error-500);">Penicilina</strong></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:var(--space-4);">💊 Medicamentos activos</h3>
+            <div class="flex flex-col gap-3">
+              <div style="padding:10px;background:var(--gray-50);border-radius:var(--radius-md);">
+                <div style="font-size:14px;font-weight:600;">Losartán 50mg</div>
+                <div style="font-size:12px;color:var(--gray-400);">1 vez al día · Mañana</div>
+                <div style="font-size:12px;color:var(--secondary-600);margin-top:3px;">● Activo desde 2 mayo 2026</div>
+              </div>
+              <div style="padding:10px;background:var(--gray-50);border-radius:var(--radius-md);">
+                <div style="font-size:14px;font-weight:600;">Vitamina D 1000 UI</div>
+                <div style="font-size:12px;color:var(--gray-400);">1 vez al día · Con comida</div>
+                <div style="font-size:12px;color:var(--secondary-600);margin-top:3px;">● Activo desde enero 2025</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:var(--space-4);">🚨 Alergias</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+              <span class="badge badge-error">Penicilina</span>
+              <span class="badge badge-error">AINES (leve)</span>
+            </div>
+            <p style="font-size:12px;color:var(--gray-400);margin-top:10px;">Informar siempre antes de cualquier procedimiento o medicación.</p>
+          </div>
+
+          <div class="card">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:var(--space-4);">📈 Presión arterial</h3>
+            <div style="height:80px;display:flex;align-items:flex-end;gap:6px;">
+              <div style="flex:1;background:var(--primary-200);border-radius:4px 4px 0 0;height:60%;"></div>
+              <div style="flex:1;background:var(--primary-300);border-radius:4px 4px 0 0;height:70%;"></div>
+              <div style="flex:1;background:var(--primary-400);border-radius:4px 4px 0 0;height:80%;"></div>
+              <div style="flex:1;background:var(--primary-500);border-radius:4px 4px 0 0;height:75%;"></div>
+              <div style="flex:1;background:var(--primary-600);border-radius:4px 4px 0 0;height:85%;"></div>
+              <div style="flex:1;background:var(--warning-500);border-radius:4px 4px 0 0;height:90%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--gray-400);margin-top:4px;">
+              <span>Nov</span><span>Dic</span><span>Ene</span><span>Feb</span><span>Mar</span><span>May</span>
+            </div>
+            <div style="margin-top:8px;font-size:12px;color:var(--gray-500);">Última: <strong style="color:var(--warning-500);">130/85 mmHg</strong> — Vigilar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+<script>
+function toggleRecord(header) {
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  const arrow = header.querySelector('span:last-child');
+  if(arrow) arrow.textContent = isOpen ? '▼' : '▲';
+}
+
+function filterTab(btn, type) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.record-card').forEach(card=>{
+    if(type==='all') card.style.display='';
+    else card.style.display = card.dataset.type===type ? '' : 'none';
+  });
+}
+
+function showToast(msg, type) {
+  const c=document.getElementById('toasts');
+  const t=document.createElement('div');
+  t.className='toast '+(type||'');
+  t.textContent=msg;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+</script>
+</body>
+</html>

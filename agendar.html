@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediSync — Agendar Cita</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="medisync.css" />
+  <style>
+    .agendar-layout { display: grid; grid-template-columns: 260px 1fr; gap: var(--space-8); }
+    .filters-panel { background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--gray-100); padding: var(--space-5); height: fit-content; position: sticky; top: 80px; }
+    .filter-group { margin-bottom: var(--space-5); }
+    .filter-label { font-size: 12px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+    .filter-option { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: var(--radius-md); cursor: pointer; transition: background 100ms; font-size: 14px; color: var(--gray-700); }
+    .filter-option:hover { background: var(--gray-50); }
+    .filter-option input { accent-color: var(--primary-600); }
+    .doctor-results { display: flex; flex-direction: column; gap: var(--space-4); }
+    .step-2-layout { display: grid; grid-template-columns: 1fr 300px; gap: var(--space-6); }
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+    .confirm-summary { background: var(--primary-50); border: 1px solid var(--primary-100); border-radius: var(--radius-lg); padding: var(--space-5); }
+    .confirm-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 7px 0; }
+    .confirm-row:not(:last-child) { border-bottom: 1px solid var(--primary-100); }
+    .conf-label { color: var(--gray-500); }
+    .conf-val { font-weight: 600; color: var(--gray-900); }
+    .modal-back { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+    .modal-back.open { display: flex; }
+    @media (max-width: 900px) {
+      .agendar-layout { grid-template-columns: 1fr; }
+      .step-2-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" role="navigation">
+    <div class="sidebar-logo">
+      <div class="logo-icon">✚</div>
+      <span class="logo-text">MediSync</span>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-title">Principal</span>
+      <a class="nav-link" href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-link active" href="agendar.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Agendar cita
+      </a>
+      <a class="nav-link" href="historial.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6M9 16h6M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M13 2v7h7"/></svg>
+        Historial médico
+      </a>
+      <span class="nav-section-title">Cuenta</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Mi perfil
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar">AG</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--gray-900);">Ana Gómez</div>
+        <div style="font-size:12px;color:var(--gray-400);">Paciente</div>
+      </div>
+      <a href="index.html" style="margin-left:auto;color:var(--gray-400);font-size:12px;">Salir</a>
+    </div>
+  </aside>
+
+  <main class="main-content" id="main">
+    <header class="page-header">
+      <div>
+        <h1 style="font-size:20px;font-weight:700;">Agendar cita médica</h1>
+        <p style="font-size:13px;color:var(--gray-500);margin-top:2px;">Encuentra a tu médico y selecciona el horario disponible</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="avatar">AG</div>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <!-- STEPPER -->
+      <div class="stepper mb-8" id="stepper">
+        <div class="step active" id="step-ind-1">
+          <div class="step-circle">1</div>
+          <span class="step-label">Elegir médico</span>
+        </div>
+        <div class="step-connector" id="conn-1"></div>
+        <div class="step" id="step-ind-2">
+          <div class="step-circle">2</div>
+          <span class="step-label">Fecha y hora</span>
+        </div>
+        <div class="step-connector" id="conn-2"></div>
+        <div class="step" id="step-ind-3">
+          <div class="step-circle">3</div>
+          <span class="step-label">Motivo</span>
+        </div>
+        <div class="step-connector" id="conn-3"></div>
+        <div class="step" id="step-ind-4">
+          <div class="step-circle">4</div>
+          <span class="step-label">Confirmar</span>
+        </div>
+      </div>
+
+      <!-- PASO 1: MÉDICO -->
+      <div class="step-panel active" id="step-1">
+        <div class="agendar-layout">
+          <!-- FILTROS -->
+          <div class="filters-panel">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:var(--space-5);">🔍 Filtros</h3>
+            <div class="filter-group">
+              <div class="filter-label">Especialidad</div>
+              <div class="filter-option"><input type="radio" name="esp" checked /> Todas</div>
+              <div class="filter-option"><input type="radio" name="esp" /> Cardiología</div>
+              <div class="filter-option"><input type="radio" name="esp" /> Medicina General</div>
+              <div class="filter-option"><input type="radio" name="esp" /> Dermatología</div>
+              <div class="filter-option"><input type="radio" name="esp" /> Pediatría</div>
+              <div class="filter-option"><input type="radio" name="esp" /> Neurología</div>
+            </div>
+            <div class="divider"></div>
+            <div class="filter-group">
+              <div class="filter-label">Modalidad</div>
+              <div class="filter-option"><input type="checkbox" checked /> Presencial</div>
+              <div class="filter-option"><input type="checkbox" checked /> Teleconsulta</div>
+            </div>
+            <div class="divider"></div>
+            <div class="filter-group">
+              <div class="filter-label">Disponibilidad</div>
+              <div class="filter-option"><input type="radio" name="disp" checked /> Esta semana</div>
+              <div class="filter-option"><input type="radio" name="disp" /> Este mes</div>
+              <div class="filter-option"><input type="radio" name="disp" /> Cualquier fecha</div>
+            </div>
+            <div class="divider"></div>
+            <div class="filter-group">
+              <div class="filter-label">Calificación mínima</div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;">
+                <span class="stars">★★★★</span>
+                <span style="font-size:13px;color:var(--gray-500);">4.0+</span>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-full btn-sm">Aplicar filtros</button>
+          </div>
+
+          <!-- RESULTADOS -->
+          <div>
+            <div class="search-bar mb-6" style="max-width:100%;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="search" placeholder="Buscar por nombre, especialidad o institución…" aria-label="Buscar médico" />
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);">
+              <span style="font-size:14px;color:var(--gray-500);"><strong style="color:var(--gray-900);">4 médicos</strong> disponibles</span>
+              <select class="input" style="width:auto;min-height:36px;padding:6px 12px;font-size:13px;">
+                <option>Ordenar: Mejor calificación</option>
+                <option>Ordenar: Disponibilidad</option>
+                <option>Ordenar: Distancia</option>
+              </select>
+            </div>
+
+            <div class="doctor-results">
+
+              <!-- MÉDICO RECOMENDADO -->
+              <div class="doctor-card recommended" onclick="selectDoctor('Dr. Carlos Mendoza','Cardiología','4.9','Clínica Santa Fe')">
+                <div class="rec-badge">★ RECOMENDADO</div>
+                <div style="display:flex;align-items:flex-start;gap:var(--space-4);">
+                  <div class="avatar avatar-lg" style="background:#7C3AED;">CM</div>
+                  <div style="flex:1;">
+                    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Dr. Carlos Mendoza</div>
+                    <div style="font-size:13px;color:var(--primary-600);font-weight:600;margin-bottom:6px;">Cardiología · 15 años de experiencia</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                      <span class="stars">★★★★★</span>
+                      <span style="font-size:13px;font-weight:700;color:var(--gray-900);">4.9</span>
+                      <span style="font-size:13px;color:var(--gray-400);">(238 reseñas)</span>
+                    </div>
+                    <div style="font-size:13px;color:var(--gray-500);">📍 Clínica Santa Fe · Bogotá</div>
+                    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                      <span class="badge badge-success">Disponible hoy</span>
+                      <span class="badge badge-primary">Presencial</span>
+                      <span class="badge badge-info">Teleconsulta</span>
+                    </div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:13px;color:var(--gray-500);margin-bottom:4px;">Próxima disponibilidad</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--primary-700);">Hoy</div>
+                    <div style="font-size:13px;color:var(--gray-500);">10:30 AM</div>
+                    <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="event.stopPropagation();selectDoctor('Dr. Carlos Mendoza','Cardiología','4.9','Clínica Santa Fe')">Seleccionar</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="doctor-card" onclick="selectDoctor('Dra. Laura Torres','Medicina General','4.7','Centro Médico Norte')">
+                <div style="display:flex;align-items:flex-start;gap:var(--space-4);">
+                  <div class="avatar avatar-lg" style="background:#059669;">LT</div>
+                  <div style="flex:1;">
+                    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Dra. Laura Torres</div>
+                    <div style="font-size:13px;color:var(--primary-600);font-weight:600;margin-bottom:6px;">Medicina General · 8 años de experiencia</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                      <span class="stars">★★★★★</span>
+                      <span style="font-size:13px;font-weight:700;">4.7</span>
+                      <span style="font-size:13px;color:var(--gray-400);">(184 reseñas)</span>
+                    </div>
+                    <div style="font-size:13px;color:var(--gray-500);">📍 Centro Médico Norte · Bogotá</div>
+                    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                      <span class="badge badge-warning">Próx. disponible: mañana</span>
+                      <span class="badge badge-info">Teleconsulta</span>
+                    </div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:13px;color:var(--gray-500);margin-bottom:4px;">Próxima disponibilidad</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--primary-700);">Mañana</div>
+                    <div style="font-size:13px;color:var(--gray-500);">3:00 PM</div>
+                    <button class="btn btn-secondary btn-sm" style="margin-top:12px;" onclick="event.stopPropagation();selectDoctor('Dra. Laura Torres','Medicina General','4.7','Centro Médico Norte')">Seleccionar</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="doctor-card" onclick="selectDoctor('Dr. Ramón Cifuentes','Dermatología','4.5','Clínica Derma Bogotá')">
+                <div style="display:flex;align-items:flex-start;gap:var(--space-4);">
+                  <div class="avatar avatar-lg" style="background:#D97706;">RC</div>
+                  <div style="flex:1;">
+                    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Dr. Ramón Cifuentes</div>
+                    <div style="font-size:13px;color:var(--primary-600);font-weight:600;margin-bottom:6px;">Dermatología · 11 años de experiencia</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                      <span class="stars">★★★★</span>
+                      <span style="font-size:13px;font-weight:700;">4.5</span>
+                      <span style="font-size:13px;color:var(--gray-400);">(97 reseñas)</span>
+                    </div>
+                    <div style="font-size:13px;color:var(--gray-500);">📍 Clínica Derma Bogotá</div>
+                    <div style="margin-top:10px;"><span class="badge badge-primary">Presencial</span></div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:22px;font-weight:700;color:var(--primary-700);">Jun 3</div>
+                    <div style="font-size:13px;color:var(--gray-500);">11:00 AM</div>
+                    <button class="btn btn-secondary btn-sm" style="margin-top:12px;">Seleccionar</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="doctor-card" onclick="selectDoctor('Dra. Paula Rincón','Pediatría','4.8','Hospital Infantil')">
+                <div style="display:flex;align-items:flex-start;gap:var(--space-4);">
+                  <div class="avatar avatar-lg" style="background:#DB2777;">PR</div>
+                  <div style="flex:1;">
+                    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Dra. Paula Rincón</div>
+                    <div style="font-size:13px;color:var(--primary-600);font-weight:600;margin-bottom:6px;">Pediatría · 6 años de experiencia</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                      <span class="stars">★★★★★</span>
+                      <span style="font-size:13px;font-weight:700;">4.8</span>
+                      <span style="font-size:13px;color:var(--gray-400);">(312 reseñas)</span>
+                    </div>
+                    <div style="font-size:13px;color:var(--gray-500);">📍 Hospital Infantil Santa Sofía</div>
+                    <div style="margin-top:10px;display:flex;gap:8px;"><span class="badge badge-success">Disponible hoy</span><span class="badge badge-primary">Presencial</span></div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:22px;font-weight:700;color:var(--primary-700);">Hoy</div>
+                    <div style="font-size:13px;color:var(--gray-500);">2:00 PM</div>
+                    <button class="btn btn-secondary btn-sm" style="margin-top:12px;">Seleccionar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2: FECHA Y HORA -->
+      <div class="step-panel" id="step-2">
+        <div style="background:var(--primary-50);border:1px solid var(--primary-100);border-radius:var(--radius-lg);padding:var(--space-5);display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-6);">
+          <div class="avatar avatar-lg" style="background:#7C3AED;" id="doc-avatar">CM</div>
+          <div>
+            <div style="font-size:16px;font-weight:700;" id="doc-name-display">Dr. Carlos Mendoza</div>
+            <div style="font-size:14px;color:var(--primary-600);font-weight:600;" id="doc-esp-display">Cardiología</div>
+            <div style="font-size:13px;color:var(--gray-500);" id="doc-clinic-display">Clínica Santa Fe · ⭐ 4.9</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="goStep(1)">← Cambiar médico</button>
+        </div>
+        <div class="step-2-layout">
+          <div>
+            <div class="card mb-6">
+              <h3 style="font-size:15px;font-weight:700;margin-bottom:var(--space-5);">Selecciona una fecha</h3>
+              <div class="calendar">
+                <div class="calendar-header">
+                  <button class="btn btn-ghost btn-sm">←</button>
+                  <span style="font-weight:700;">Mayo 2026</span>
+                  <button class="btn btn-ghost btn-sm">→</button>
+                </div>
+                <div class="cal-grid" id="cal-grid">
+                  <div class="cal-day-name">Lu</div><div class="cal-day-name">Ma</div><div class="cal-day-name">Mi</div><div class="cal-day-name">Ju</div><div class="cal-day-name">Vi</div><div class="cal-day-name">Sá</div><div class="cal-day-name">Do</div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <h3 style="font-size:15px;font-weight:700;margin-bottom:var(--space-4);" id="slots-title">Horarios disponibles — <span id="selected-date-label">Selecciona una fecha</span></h3>
+              <div id="slots-section" style="display:none;">
+                <p style="font-size:13px;font-weight:600;color:var(--gray-500);margin-bottom:8px;">🌅 Mañana</p>
+                <div class="slot-grid mb-4" id="slots-am"></div>
+                <p style="font-size:13px;font-weight:600;color:var(--gray-500);margin-bottom:8px;">🌇 Tarde</p>
+                <div class="slot-grid" id="slots-pm"></div>
+                <div class="alert alert-info mt-4" style="font-size:13px;">💡 Los horarios en gris no están disponibles. Haz clic en uno libre para seleccionarlo.</div>
+              </div>
+              <div id="slots-placeholder" style="text-align:center;padding:40px;color:var(--gray-400);">
+                <div style="font-size:32px;margin-bottom:8px;">📅</div>
+                <div style="font-size:14px;">Selecciona una fecha para ver los horarios disponibles</div>
+              </div>
+            </div>
+          </div>
+          <!-- RESUMEN -->
+          <div>
+            <div class="confirm-summary">
+              <h3 style="font-size:14px;font-weight:700;margin-bottom:var(--space-4);color:var(--primary-800);">Resumen de reserva</h3>
+              <div class="confirm-row"><span class="conf-label">Médico</span><span class="conf-val" id="res-doc">—</span></div>
+              <div class="confirm-row"><span class="conf-label">Especialidad</span><span class="conf-val" id="res-esp">—</span></div>
+              <div class="confirm-row"><span class="conf-label">Fecha</span><span class="conf-val" id="res-date">—</span></div>
+              <div class="confirm-row"><span class="conf-label">Hora</span><span class="conf-val" id="res-time">—</span></div>
+              <div class="confirm-row"><span class="conf-label">Modalidad</span><span class="conf-val">Presencial</span></div>
+            </div>
+            <button class="btn btn-primary btn-full mt-4" onclick="goStep(3)" id="btn-next-2" disabled>Continuar →</button>
+            <button class="btn btn-ghost btn-full btn-sm mt-2" onclick="goStep(1)">← Volver</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 3: MOTIVO -->
+      <div class="step-panel" id="step-3">
+        <div class="card" style="max-width:600px;margin:0 auto;">
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:var(--space-6);">📝 Motivo de la consulta</h3>
+          <div class="flex flex-col gap-5">
+            <div class="input-group">
+              <label class="input-label">Tipo de consulta</label>
+              <select class="input">
+                <option>Primera consulta</option>
+                <option>Control / Seguimiento</option>
+                <option>Urgencia no crítica</option>
+                <option>Solicitud de exámenes</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Describe tu motivo de consulta</label>
+              <textarea class="input" rows="4" placeholder="Describe brevemente tus síntomas o el motivo de tu visita…" style="resize:vertical;"></textarea>
+              <span class="input-hint">Esta información ayuda al médico a prepararse. Máx. 500 caracteres.</span>
+            </div>
+            <div class="input-group">
+              <label class="input-label">¿Tienes alguna alergia conocida?</label>
+              <input class="input" type="text" placeholder="Ej: Penicilina, Ibuprofeno (o deja en blanco si no tienes)" />
+            </div>
+            <div class="input-group">
+              <label class="input-label">¿Actualmente tomas algún medicamento?</label>
+              <input class="input" type="text" placeholder="Ej: Losartán 50mg, Metformina 850mg" />
+            </div>
+            <div style="display:flex;gap:var(--space-3);justify-content:flex-end;margin-top:var(--space-2);">
+              <button class="btn btn-secondary" onclick="goStep(2)">← Volver</button>
+              <button class="btn btn-primary" onclick="goStep(4)">Revisar cita →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 4: CONFIRMAR -->
+      <div class="step-panel" id="step-4">
+        <div style="max-width:620px;margin:0 auto;">
+          <div class="alert alert-info mb-6">
+            <span style="font-size:18px;">ℹ️</span>
+            <span>Por favor revisa todos los datos antes de confirmar. Recibirás una confirmación por correo y SMS.</span>
+          </div>
+          <div class="card mb-6">
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:var(--space-5);">Detalles de tu cita</h3>
+            <div class="flex flex-col gap-0">
+              <div class="confirm-row"><span class="conf-label">Médico</span><span class="conf-val" id="conf-doc">Dr. Carlos Mendoza</span></div>
+              <div class="confirm-row"><span class="conf-label">Especialidad</span><span class="conf-val" id="conf-esp">Cardiología</span></div>
+              <div class="confirm-row"><span class="conf-label">Centro médico</span><span class="conf-val" id="conf-clinic">Clínica Santa Fe</span></div>
+              <div class="confirm-row"><span class="conf-label">Fecha</span><span class="conf-val" id="conf-date">—</span></div>
+              <div class="confirm-row"><span class="conf-label">Hora</span><span class="conf-val" id="conf-time">—</span></div>
+              <div class="confirm-row"><span class="conf-label">Modalidad</span><span class="conf-val">Presencial — Consultorio 302</span></div>
+              <div class="confirm-row"><span class="conf-label">Motivo</span><span class="conf-val">Primera consulta</span></div>
+            </div>
+          </div>
+          <div class="card mb-6">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:var(--space-4);">🔔 Recordatorios</h3>
+            <div class="flex flex-col gap-3">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;">
+                <span>SMS — 24 horas antes</span>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;">
+                <span>Correo — 48 horas antes</span>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:var(--space-3);">
+            <button class="btn btn-secondary" onclick="goStep(3)">← Volver</button>
+            <button class="btn btn-success" style="flex:1;" onclick="confirmAppointment()">✓ Confirmar cita</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL ÉXITO -->
+<div class="modal-back" id="success-modal" role="dialog" aria-modal="true" aria-label="Cita confirmada">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:56px;margin-bottom:var(--space-4);">🎉</div>
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:var(--space-3);">¡Cita confirmada!</h2>
+    <p style="color:var(--gray-500);margin-bottom:var(--space-4);">Tu cita ha sido agendada correctamente. Te enviaremos un recordatorio por SMS y correo.</p>
+    <div class="confirm-summary" style="text-align:left;margin-bottom:var(--space-6);">
+      <div class="confirm-row"><span class="conf-label">Médico</span><span class="conf-val" id="modal-doc">Dr. Carlos Mendoza</span></div>
+      <div class="confirm-row"><span class="conf-label">Fecha</span><span class="conf-val" id="modal-date">—</span></div>
+      <div class="confirm-row"><span class="conf-label">Hora</span><span class="conf-val" id="modal-time">—</span></div>
+    </div>
+    <div style="display:flex;gap:var(--space-3);">
+      <a href="dashboard.html" class="btn btn-primary" style="flex:1;">Ver mi dashboard</a>
+      <button class="btn btn-secondary" onclick="document.getElementById('success-modal').classList.remove('open')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+<script>
+// State
+let selectedDoc = { name: 'Dr. Carlos Mendoza', esp: 'Cardiología', clinic: 'Clínica Santa Fe', rating: '4.9' };
+let selectedDate = '';
+let selectedTime = '';
+let currentStep = 1;
+
+// Doctor selection
+function selectDoctor(name, esp, rating, clinic) {
+  selectedDoc = { name, esp, rating, clinic };
+  goStep(2);
+}
+
+// Step navigation
+function goStep(n) {
+  for(let i=1;i<=4;i++) {
+    document.getElementById('step-'+i).classList.toggle('active', i===n);
+    const ind = document.getElementById('step-ind-'+i);
+    ind.classList.remove('active','completed');
+    if(i===n) ind.classList.add('active');
+    else if(i<n) ind.classList.add('completed');
+    if(i<4) {
+      const conn = document.getElementById('conn-'+i);
+      conn.classList.toggle('done', i<n);
+    }
+  }
+  currentStep = n;
+  if(n===2) updateStep2();
+  if(n===4) updateStep4();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateStep2() {
+  document.getElementById('doc-name-display').textContent = selectedDoc.name;
+  document.getElementById('doc-esp-display').textContent = selectedDoc.esp;
+  document.getElementById('doc-clinic-display').textContent = selectedDoc.clinic + ' · ⭐ ' + selectedDoc.rating;
+  document.getElementById('res-doc').textContent = selectedDoc.name;
+  document.getElementById('res-esp').textContent = selectedDoc.esp;
+  buildCalendar();
+}
+
+function updateStep4() {
+  document.getElementById('conf-doc').textContent = selectedDoc.name;
+  document.getElementById('conf-esp').textContent = selectedDoc.esp;
+  document.getElementById('conf-clinic').textContent = selectedDoc.clinic;
+  document.getElementById('conf-date').textContent = selectedDate || '—';
+  document.getElementById('conf-time').textContent = selectedTime || '—';
+}
+
+// Build calendar
+function buildCalendar() {
+  const grid = document.getElementById('cal-grid');
+  // Clear existing day cells (keep headers)
+  while(grid.children.length > 7) grid.removeChild(grid.lastChild);
+
+  const taken = [1,4,7,9,13,16,20,22,25,27];
+  // May 2026 starts on Friday (day 5)
+  const startDay = 4; // 0=Mon
+  for(let i=0;i<startDay;i++) {
+    const blank = document.createElement('div');
+    blank.className = 'cal-day';
+    grid.appendChild(blank);
+  }
+  for(let d=1;d<=31;d++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day available';
+    if(taken.includes(d)) el.classList.add('unavailable');
+    if(d===17) el.classList.add('today');
+    el.textContent = d;
+    if(!taken.includes(d)) {
+      el.onclick = () => pickDate(d, el);
+    }
+    grid.appendChild(el);
+  }
+}
+
+function pickDate(d, el) {
+  document.querySelectorAll('.cal-day').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedDate = `${d} de mayo de 2026`;
+  document.getElementById('selected-date-label').textContent = selectedDate;
+  document.getElementById('res-date').textContent = selectedDate;
+  document.getElementById('res-time').textContent = '—';
+  selectedTime = '';
+  document.getElementById('btn-next-2').disabled = true;
+  buildSlots();
+}
+
+function buildSlots() {
+  const am = document.getElementById('slots-am');
+  const pm = document.getElementById('slots-pm');
+  am.innerHTML = '';
+  pm.innerHTML = '';
+  const takenAM = ['08:00','09:30','11:30'];
+  const takenPM = ['01:00','02:30','04:30'];
+  ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30'].forEach(t => {
+    const s = document.createElement('div');
+    s.className = 'slot' + (takenAM.includes(t) ? ' taken' : '');
+    s.textContent = t;
+    if(!takenAM.includes(t)) s.onclick = () => pickSlot(t, s);
+    am.appendChild(s);
+  });
+  ['01:00','01:30','02:00','02:30','03:00','03:30','04:00','04:30','05:00','05:30'].forEach(t => {
+    const s = document.createElement('div');
+    s.className = 'slot' + (takenPM.includes(t) ? ' taken' : '');
+    s.textContent = t;
+    if(!takenPM.includes(t)) s.onclick = () => pickSlot(t, s);
+    pm.appendChild(s);
+  });
+  document.getElementById('slots-section').style.display = 'block';
+  document.getElementById('slots-placeholder').style.display = 'none';
+}
+
+function pickSlot(time, el) {
+  document.querySelectorAll('.slot').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTime = time;
+  document.getElementById('res-time').textContent = time;
+  document.getElementById('btn-next-2').disabled = false;
+}
+
+function confirmAppointment() {
+  document.getElementById('modal-doc').textContent = selectedDoc.name;
+  document.getElementById('modal-date').textContent = selectedDate || 'Mayo 18, 2026';
+  document.getElementById('modal-time').textContent = selectedTime || '10:30';
+  document.getElementById('success-modal').classList.add('open');
+}
+
+function showToast(msg, type) {
+  const c=document.getElementById('toasts');
+  const t=document.createElement('div');
+  t.className='toast '+(type||'');
+  t.textContent=msg;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+
+// Init
+buildCalendar();
+</script>
+</body>
+</html>

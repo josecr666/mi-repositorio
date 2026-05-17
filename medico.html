@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediSync — Panel del Médico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="medisync.css" />
+  <style>
+    .medico-layout { display: grid; grid-template-columns: 1fr 320px; gap: var(--space-6); }
+    .agenda-slot {
+      display: flex;
+      align-items: stretch;
+      gap: var(--space-4);
+      margin-bottom: var(--space-3);
+    }
+    .time-col {
+      width: 60px;
+      text-align: right;
+      padding-top: 12px;
+      font-size: 12px;
+      color: var(--gray-400);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .agenda-item {
+      flex: 1;
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      cursor: pointer;
+      transition: all 150ms;
+      border-left: 4px solid var(--gray-300);
+    }
+    .agenda-item:hover { box-shadow: var(--shadow-md); transform: translateX(2px); }
+    .agenda-item.confirmada { border-left-color: var(--secondary-500); }
+    .agenda-item.en-sala { border-left-color: var(--primary-600); background: var(--primary-50); }
+    .agenda-item.cancelada { border-left-color: var(--error-500); opacity: 0.6; }
+    .agenda-item.completada { border-left-color: var(--gray-300); opacity: 0.7; }
+    .agenda-item.empty {
+      border-style: dashed;
+      border-left-style: dashed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-300);
+      font-size: 13px;
+      min-height: 52px;
+      cursor: default;
+    }
+    .agenda-item.empty:hover { box-shadow: none; transform: none; }
+    .view-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-6); }
+    .view-tab {
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 100ms;
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      color: var(--gray-600);
+    }
+    .view-tab.active { background: var(--primary-600); border-color: var(--primary-600); color: white; }
+    .patient-panel { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--space-5); }
+    @media (max-width: 1000px) { .medico-layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" role="navigation">
+    <div class="sidebar-logo">
+      <div class="logo-icon">✚</div>
+      <span class="logo-text">MediSync</span>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-title">Módulo médico</span>
+      <a class="nav-link active" href="medico.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Mi agenda
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Mis pacientes
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6M9 16h6M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M13 2v7h7"/></svg>
+        Historiales
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Estadísticas
+      </a>
+      <span class="nav-section-title">Sistema</span>
+      <a class="nav-link" href="admin.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Panel Admin
+      </a>
+      <a class="nav-link" href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Salir
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar" style="background:#7C3AED;">CM</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--gray-900);">Dr. Carlos Mendoza</div>
+        <div style="font-size:12px;color:var(--gray-400);">Cardiología · Médico</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <h1 style="font-size:20px;font-weight:700;">Panel del médico</h1>
+        <p style="font-size:13px;color:var(--gray-500);margin-top:2px;">Dr. Carlos Mendoza · Cardiología · sábado, 17 de mayo de 2026</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="btn btn-primary" onclick="showToast('Abriendo formulario de notas…','')">+ Añadir nota clínica</button>
+        <button class="btn btn-ghost notif-dot" style="padding:10px;" aria-label="Notificaciones">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </button>
+        <div class="avatar" style="background:#7C3AED;">CM</div>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <!-- KPIs -->
+      <div class="kpi-grid mb-8">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--primary-100);">📅</div>
+          <div class="kpi-value">8</div>
+          <div class="kpi-label">Citas hoy</div>
+          <div class="kpi-trend trend-up">3 completadas · 5 pendientes</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:#F3E8FF;">🧑‍⚕️</div>
+          <div class="kpi-value">1</div>
+          <div class="kpi-label">En sala ahora</div>
+          <div class="kpi-trend" style="color:var(--primary-600);">● Ana Gómez — 10:30</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--secondary-100);">✅</div>
+          <div class="kpi-value">42</div>
+          <div class="kpi-label">Citas esta semana</div>
+          <div class="kpi-trend trend-up">↑ 6 vs semana pasada</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:#FEF3C7;">⭐</div>
+          <div class="kpi-value">4.9</div>
+          <div class="kpi-label">Calificación</div>
+          <div class="kpi-trend" style="color:var(--warning-500);">★★★★★ (238 reseñas)</div>
+        </div>
+      </div>
+
+      <!-- VISTA AGENDA -->
+      <div class="section-header mb-4">
+        <h2 class="section-title">Agenda diaria</h2>
+        <div class="view-tabs">
+          <button class="view-tab active" onclick="setView(this)">Día</button>
+          <button class="view-tab" onclick="setView(this)">Semana</button>
+          <button class="view-tab" onclick="setView(this)">Mes</button>
+        </div>
+      </div>
+
+      <!-- FECHA NAV -->
+      <div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-6);">
+        <button class="btn btn-ghost btn-sm">← Anterior</button>
+        <strong style="font-size:15px;">Sábado 17 de mayo de 2026</strong>
+        <button class="btn btn-ghost btn-sm">Siguiente →</button>
+        <button class="btn btn-secondary btn-sm" onclick="showToast('Vista de hoy','')">Hoy</button>
+      </div>
+
+      <div class="medico-layout">
+
+        <!-- AGENDA -->
+        <div>
+          <!-- LEYENDA -->
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:var(--space-4);flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;background:var(--primary-600);border-radius:2px;"></div>En sala</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;background:var(--secondary-500);border-radius:2px;"></div>Confirmada</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;background:var(--error-500);border-radius:2px;"></div>Cancelada</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;background:var(--gray-300);border-radius:2px;"></div>Completada</div>
+          </div>
+
+          <!-- SLOTS DE AGENDA -->
+          <div>
+            <div class="agenda-slot">
+              <div class="time-col">08:00</div>
+              <div class="agenda-item completada" onclick="selectPatient('Roberto García','68 años','Seguimiento post-cirugía coronaria','completada')">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;">Roberto García</div>
+                    <div style="font-size:12px;color:var(--gray-500);">Seguimiento post-cirugía · 30 min</div>
+                  </div>
+                  <span class="appt-status appt-completada">✓ Completada</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="agenda-slot">
+              <div class="time-col">08:30</div>
+              <div class="agenda-item empty">— Disponible —</div>
+            </div>
+
+            <div class="agenda-slot">
+              <div class="time-col">09:00</div>
+              <div class="agenda-item completada" onclick="selectPatient('María Lozano','45 años','Control presión arterial','completada')">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;">María Lozano</div>
+                    <div style="font-size:12px;color:var(--gray-500);">Control presión arterial · 30 min</div>
+                  </div>
+                  <span class="appt-status appt-completada">✓ Completada</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="agenda-slot">
+              <div class="time-col">09:30</div>
+              <div class="agenda-item completada" onclick="selectPatient('Felipe Suárez','52 años','EKG y holter','completada')">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;">Felipe Suárez</div>
+                    <div style="font-size:12px;color:var(--gray-500);">EKG y holter · 45 min</div>
+                  </div>
+                  <span class="appt-status appt-completada">✓ Completada</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="agenda-slot">
+              <div class="time-col">10:30</div>
+              <div class="agenda-item en-sala" onclick="selectPatient('Ana Gómez','34 años','Primera consulta — palpitaciones','en-sala')">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+                      <div style="font-size:14px;font-weight:700;">Ana Gómez</div>
+                      <span class="badge badge-primary" style="font-size:11px;background:var(--primary-600);color:white;">EN SALA</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--primary-600);">Primera consulta — palpitaciones · 45 min</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:12px;color:var(--gray-500);">Esperando: 5 min</div>
+                    <button class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="event.stopPropagation();showToast('Abriendo historial de Ana Gómez…','')">Ver historial</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="agenda-slot">
+              <div class="time-col">11:30</div>
+              <div class="agenda-item confirmada" onclick="selectPatient('Jorge Patiño','61 años','Ecocardiograma de control','confirmada')">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;">Jorge Patiño</div>
+                    <div style="font-size:12px;color:var(--gray-500);">Ecocardiograma de control · 60 min</div>
+                  </div>
+                  <span class="appt-status appt-confirmada">● Confirmada</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="agenda-slot">
+              <div class="time-col">12:30</div>
+              <div class="agenda-item empty">— Almuerzo —</div>
+            </div>
+
+            <div class="agenda-slot">
+              <div class="time-col">02:00</div>
+              <div class="agenda-item cancelada">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;text-decoration:line-through;">Sandra Vargas</div>
+                    <div style="font-size:12px;color:var(--gray-400);">Canceló 2h antes</div>
+                  </div>
+                  <span class="appt-status appt-cancelada">✗ Cancelada</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="agenda-slot">
+              <div class="time-col">03:00</div>
+              <div class="agenda-item confirmada" onclick="selectPatient('Lucía Restrepo','29 años','Chequeo cardiovascular preventivo','confirmada')">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;">Lucía Restrepo</div>
+                    <div style="font-size:12px;color:var(--gray-500);">Chequeo cardiovascular preventivo · 30 min</div>
+                  </div>
+                  <span class="appt-status appt-confirmada">● Confirmada</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="agenda-slot">
+              <div class="time-col">04:00</div>
+              <div class="agenda-item confirmada" onclick="selectPatient('Camilo Herrera','44 años','Resultado de prueba de esfuerzo','confirmada')">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;">Camilo Herrera</div>
+                    <div style="font-size:12px;color:var(--gray-500);">Resultado prueba de esfuerzo · 30 min</div>
+                  </div>
+                  <span class="appt-status appt-confirmada">● Confirmada</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL PACIENTE -->
+        <div class="flex flex-col gap-5">
+          <div class="patient-panel" id="patient-panel">
+            <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-5);">
+              <div class="avatar avatar-lg" style="background:var(--primary-600);" id="pp-avatar">AG</div>
+              <div>
+                <div style="font-size:16px;font-weight:700;" id="pp-name">Ana Gómez</div>
+                <div style="font-size:13px;color:var(--gray-500);" id="pp-age">34 años · ID #P-20445</div>
+                <span class="appt-status appt-en-sala" id="pp-status">● En sala</span>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-3" style="font-size:13px;margin-bottom:var(--space-5);">
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray-500);">Motivo</span><span style="font-weight:600;text-align:right;max-width:60%;" id="pp-motivo">Primera consulta — palpitaciones</span></div>
+              <div class="divider"></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray-500);">Sangre</span><strong>O+</strong></div>
+              <div class="divider"></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray-500);">EPS</span><strong>Sanitas</strong></div>
+              <div class="divider"></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray-500);">Alergias</span><strong style="color:var(--error-500);">Penicilina</strong></div>
+              <div class="divider"></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray-500);">Último diagnóstico</span><span style="font-weight:600;">Hipertensión leve</span></div>
+            </div>
+
+            <div style="margin-bottom:var(--space-4);">
+              <div style="font-size:12px;font-weight:700;color:var(--gray-400);text-transform:uppercase;margin-bottom:8px;">Medicamentos actuales</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <span class="badge badge-primary" style="justify-content:flex-start;">💊 Losartán 50mg — 1/día</span>
+                <span class="badge badge-gray" style="justify-content:flex-start;">💊 Vitamina D 1000UI — 1/día</span>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <button class="btn btn-primary btn-full btn-sm" onclick="showToast('Abriendo historial clínico…','')">📋 Ver historial completo</button>
+              <button class="btn btn-secondary btn-full btn-sm" onclick="showToast('Abriendo notas…','')">✏️ Añadir nota clínica</button>
+              <button class="btn btn-ghost btn-full btn-sm" onclick="showToast('Abriendo formulario de receta…','')">📝 Emitir receta</button>
+            </div>
+          </div>
+
+          <!-- ESTADÍSTICAS RÁPIDAS -->
+          <div class="card">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:var(--space-4);">📊 Mi semana</h3>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;height:60px;align-items:flex-end;margin-bottom:8px;">
+              <div style="background:var(--primary-300);border-radius:3px 3px 0 0;height:60%;"></div>
+              <div style="background:var(--primary-400);border-radius:3px 3px 0 0;height:80%;"></div>
+              <div style="background:var(--primary-500);border-radius:3px 3px 0 0;height:70%;"></div>
+              <div style="background:var(--primary-600);border-radius:3px 3px 0 0;height:100%;"></div>
+              <div style="background:var(--primary-200);border-radius:3px 3px 0 0;height:40%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--gray-400);">
+              <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray-500);margin-top:8px;text-align:center;">Total semanal: <strong>42 citas</strong></div>
+          </div>
+
+          <!-- NOTA RÁPIDA -->
+          <div class="card">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:var(--space-3);">🗒️ Nota rápida</h3>
+            <textarea class="input" rows="4" placeholder="Escribe una nota para la consulta actual…" style="resize:vertical;font-size:13px;"></textarea>
+            <button class="btn btn-primary btn-full btn-sm mt-3" onclick="showToast('Nota guardada','success')">Guardar nota</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+<script>
+function setView(btn) {
+  document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  showToast('Vista: ' + btn.textContent, '');
+}
+
+function selectPatient(name, age, motivo, status) {
+  const initials = name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('pp-avatar').textContent = initials;
+  document.getElementById('pp-name').textContent = name;
+  document.getElementById('pp-age').textContent = age + ' · Seleccionado';
+  document.getElementById('pp-motivo').textContent = motivo;
+  const statusEl = document.getElementById('pp-status');
+  statusEl.className = 'appt-status appt-' + status;
+  statusEl.textContent = status === 'en-sala' ? '● En sala' : status === 'confirmada' ? '● Confirmada' : status === 'completada' ? '✓ Completada' : '✗ Cancelada';
+}
+
+function showToast(msg, type) {
+  const c=document.getElementById('toasts');
+  const t=document.createElement('div');
+  t.className='toast '+(type||'');
+  t.textContent=msg;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+</script>
+</body>
+</html>
