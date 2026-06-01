@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CanalSeguro — canal de denuncia ciudadana anónima y cifrada. Reporta corrupción, minería ilegal, crimen organizado y abuso de autoridad sin revelar tu identidad." />
+  <meta name="robots" content="index, follow" />
+  <meta name="color-scheme" content="light dark" />
+  <title>CanalSeguro — Denuncia ciudadana anónima y segura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <!-- Salto de accesibilidad para navegación por teclado (HU-008) -->
+  <a class="skip-link" href="#main">Saltar al contenido principal</a>
+
+  <!-- Barra de seguridad de la conexión (HU-007) -->
+  <div id="security-banner" class="security-banner" role="status" aria-live="polite">
+    <span class="security-banner__icon" aria-hidden="true">🔒</span>
+    <span id="security-banner__text" class="security-banner__text">Verificando la seguridad de la conexión…</span>
+    <button id="security-banner__more" class="security-banner__more" type="button" aria-expanded="false">
+      Consejos de seguridad
+    </button>
+  </div>
+  <div id="security-tips" class="security-tips" hidden>
+    <ul>
+      <li>Para máximo anonimato, accede usando el <strong>Navegador Tor</strong> (torproject.org).</li>
+      <li>Verifica que la dirección comience por <strong>https://</strong> y muestre el candado.</li>
+      <li>No incluyas tu nombre, teléfono ni datos que permitan identificarte en la descripción.</li>
+      <li>Usa una red en la que no puedas ser observado y cierra la sesión al terminar.</li>
+    </ul>
+  </div>
+
+  <!-- Encabezado / navegación -->
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="#inicio" data-route="inicio" aria-label="CanalSeguro, ir al inicio">
+        <span class="brand__mark" aria-hidden="true">🛡️</span>
+        <span class="brand__name">Canal<strong>Seguro</strong></span>
+      </a>
+
+      <nav class="main-nav" aria-label="Navegación principal">
+        <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-list">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+          <span class="sr-only">Abrir menú</span>
+        </button>
+        <ul class="nav-list" id="nav-list">
+          <li><a href="#inicio" data-route="inicio">Inicio</a></li>
+          <li><a href="#denunciar" data-route="denunciar">Denunciar</a></li>
+          <li><a href="#consultar" data-route="consultar">Consultar estado</a></li>
+          <li><a href="#faq" data-route="faq">Preguntas frecuentes</a></li>
+          <li><a href="#acerca" data-route="acerca">Acerca de</a></li>
+        </ul>
+      </nav>
+
+      <!-- Modo alto contraste (HU-008) -->
+      <button id="contrast-toggle" class="contrast-toggle" type="button" aria-pressed="false" title="Activar modo de alto contraste">
+        <span aria-hidden="true">◑</span>
+        <span class="sr-only">Alternar modo de alto contraste</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+
+    <!-- ===================== INICIO ===================== -->
+    <section id="inicio" class="view" data-view="inicio">
+      <div class="hero">
+        <div class="hero__content">
+          <p class="hero__eyebrow">Canal de denuncia ciudadana cifrada</p>
+          <h1 class="hero__title">Denuncia sin miedo.<br />Tu identidad nunca queda registrada.</h1>
+          <p class="hero__lead">
+            CanalSeguro te permite reportar <strong>corrupción</strong>, <strong>minería ilegal</strong>,
+            <strong>crimen organizado</strong> y <strong>abuso de autoridad</strong> de forma totalmente anónima.
+            Sin registro, sin datos personales y sin rastro: solo recibes un código irrecuperable para
+            seguir tu caso.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary btn--lg" href="#denunciar" data-route="denunciar">Presentar una denuncia</a>
+            <a class="btn btn--ghost btn--lg" href="#consultar" data-route="consultar">Consultar mi caso</a>
+          </div>
+          <ul class="hero__badges" aria-label="Garantías de la plataforma">
+            <li><span aria-hidden="true">🕵️</span> Anonimato irreversible</li>
+            <li><span aria-hidden="true">🧹</span> Metadatos eliminados</li>
+            <li><span aria-hidden="true">🔑</span> Código de seguimiento único</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="features">
+        <h2 class="section-title">Cómo te protege CanalSeguro</h2>
+        <div class="features__grid">
+          <article class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">🚫🆔</div>
+            <h3>Sin datos personales</h3>
+            <p>No pedimos nombre, correo ni teléfono. No hay cuentas ni registro: nada que pueda vincularte con tu denuncia.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">🧹</div>
+            <h3>Supresión de metadatos</h3>
+            <p>Las imágenes que adjuntas se reprocesan en tu propio navegador para eliminar datos EXIF como ubicación GPS o modelo del dispositivo.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">🔑</div>
+            <h3>Código irrecuperable</h3>
+            <p>Al enviar recibes un código único. Es la única forma de consultar tu caso; ni nosotros podemos regenerarlo.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">🔍</div>
+            <h3>Código fuente auditable</h3>
+            <p>Todo el código es público en GitHub para que cualquier persona pueda verificar cómo se protege tu información.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="steps">
+        <h2 class="section-title">Tres pasos para denunciar</h2>
+        <ol class="steps__list">
+          <li><span class="steps__num">1</span> Elige la <strong>categoría</strong> del hecho.</li>
+          <li><span class="steps__num">2</span> Describe lo ocurrido y <strong>adjunta evidencia</strong> (opcional).</li>
+          <li><span class="steps__num">3</span> <strong>Revisa</strong> y envía. Guarda tu código.</li>
+        </ol>
+        <a class="btn btn--primary btn--lg" href="#denunciar" data-route="denunciar">Comenzar ahora</a>
+      </div>
+    </section>
+
+    <!-- ===================== DENUNCIAR ===================== -->
+    <section id="denunciar" class="view" data-view="denunciar" hidden>
+      <div class="container container--narrow">
+        <h1 class="page-title">Presentar una denuncia</h1>
+
+        <!-- Indicador de pasos -->
+        <ol class="stepper" id="stepper" aria-label="Progreso del formulario">
+          <li class="stepper__item is-active" data-step="1"><span class="stepper__dot">1</span> Categoría</li>
+          <li class="stepper__item" data-step="2"><span class="stepper__dot">2</span> Descripción</li>
+          <li class="stepper__item" data-step="3"><span class="stepper__dot">3</span> Revisión</li>
+        </ol>
+
+        <form id="report-form" novalidate>
+          <!-- Paso 1: categoría (HU-001) -->
+          <fieldset class="form-step is-active" data-step="1">
+            <legend class="form-step__legend">¿Qué tipo de irregularidad quieres reportar?</legend>
+            <div class="category-grid" role="radiogroup" aria-label="Categoría de la denuncia">
+              <label class="category-option">
+                <input type="radio" name="categoria" value="Corrupción" required />
+                <span class="category-option__box">
+                  <span class="category-option__icon" aria-hidden="true">💰</span>
+                  <span class="category-option__label">Corrupción</span>
+                  <span class="category-option__desc">Soborno, peculado, contratación irregular</span>
+                </span>
+              </label>
+              <label class="category-option">
+                <input type="radio" name="categoria" value="Minería ilegal" />
+                <span class="category-option__box">
+                  <span class="category-option__icon" aria-hidden="true">⛏️</span>
+                  <span class="category-option__label">Minería ilegal</span>
+                  <span class="category-option__desc">Explotación sin licencia, daño ambiental</span>
+                </span>
+              </label>
+              <label class="category-option">
+                <input type="radio" name="categoria" value="Crimen organizado" />
+                <span class="category-option__box">
+                  <span class="category-option__icon" aria-hidden="true">🚨</span>
+                  <span class="category-option__label">Crimen organizado</span>
+                  <span class="category-option__desc">Extorsión, tráfico, estructuras armadas</span>
+                </span>
+              </label>
+              <label class="category-option">
+                <input type="radio" name="categoria" value="Abuso de autoridad" />
+                <span class="category-option__box">
+                  <span class="category-option__icon" aria-hidden="true">👮</span>
+                  <span class="category-option__label">Abuso de autoridad</span>
+                  <span class="category-option__desc">Uso indebido de la fuerza o del cargo</span>
+                </span>
+              </label>
+            </div>
+            <p class="field-error" id="error-categoria" role="alert" hidden>Selecciona una categoría para continuar.</p>
+            <div class="form-nav">
+              <span></span>
+              <button type="button" class="btn btn--primary" data-action="next">Continuar</button>
+            </div>
+          </fieldset>
+
+          <!-- Paso 2: descripción + evidencia (HU-002) -->
+          <fieldset class="form-step" data-step="2" hidden>
+            <legend class="form-step__legend">Describe los hechos</legend>
+
+            <label class="field-label" for="descripcion">Descripción de la denuncia</label>
+            <p class="field-hint">Cuenta qué ocurrió, dónde y cuándo. <strong>No incluyas tu nombre ni datos que te identifiquen.</strong></p>
+            <textarea id="descripcion" name="descripcion" rows="8" minlength="30" required
+              placeholder="Ej.: En el municipio de… se observó que…"></textarea>
+            <div class="field-meta">
+              <span id="desc-count" class="char-count">0 caracteres</span>
+              <span class="field-hint">Mínimo 30 caracteres</span>
+            </div>
+            <p class="field-error" id="error-descripcion" role="alert" hidden>La descripción debe tener al menos 30 caracteres.</p>
+
+            <label class="field-label" for="ubicacion">Ubicación aproximada (opcional)</label>
+            <input type="text" id="ubicacion" name="ubicacion" placeholder="Departamento / municipio / zona" autocomplete="off" />
+
+            <label class="field-label" id="evidencia-label">Evidencia adjunta (opcional)</label>
+            <p class="field-hint">
+              Las imágenes se procesan en tu navegador para <strong>eliminar metadatos</strong> (ubicación GPS, dispositivo). Máximo 25&nbsp;MB por archivo.
+            </p>
+            <div id="dropzone" class="dropzone" tabindex="0" role="button"
+                 aria-labelledby="evidencia-label" aria-describedby="dropzone-help">
+              <input type="file" id="file-input" multiple
+                     accept="image/*,application/pdf,.doc,.docx,.txt,.mp3,.mp4,.m4a" hidden />
+              <span class="dropzone__icon" aria-hidden="true">📎</span>
+              <span id="dropzone-help" class="dropzone__text">
+                Arrastra archivos aquí o <span class="dropzone__link">selecciona desde tu dispositivo</span>
+              </span>
+            </div>
+            <p class="field-error" id="error-file" role="alert" hidden></p>
+            <ul id="file-list" class="file-list" aria-live="polite"></ul>
+
+            <div class="form-nav">
+              <button type="button" class="btn btn--ghost" data-action="prev">Atrás</button>
+              <button type="button" class="btn btn--primary" data-action="next">Continuar</button>
+            </div>
+          </fieldset>
+
+          <!-- Paso 3: revisión (HU-005) -->
+          <fieldset class="form-step" data-step="3" hidden>
+            <legend class="form-step__legend">Revisa antes de enviar</legend>
+            <p class="review-warning" role="note">
+              ⚠️ Una vez enviada, <strong>no podrás modificar la denuncia</strong>. Revisa que todo sea correcto.
+            </p>
+
+            <dl class="review">
+              <div class="review__row">
+                <dt>Categoría</dt>
+                <dd id="review-categoria">—</dd>
+              </div>
+              <div class="review__row">
+                <dt>Descripción</dt>
+                <dd id="review-descripcion" class="review__desc">—</dd>
+              </div>
+              <div class="review__row">
+                <dt>Ubicación</dt>
+                <dd id="review-ubicacion">—</dd>
+              </div>
+              <div class="review__row">
+                <dt>Evidencia</dt>
+                <dd id="review-evidencia">Sin archivos</dd>
+              </div>
+            </dl>
+
+            <label class="checkbox">
+              <input type="checkbox" id="confirma" name="confirma" required />
+              <span>Entiendo que la denuncia es anónima e irreversible y que el código de seguimiento es la única forma de consultarla.</span>
+            </label>
+            <p class="field-error" id="error-confirma" role="alert" hidden>Debes confirmar para poder enviar.</p>
+
+            <div class="form-nav">
+              <button type="button" class="btn btn--ghost" data-action="prev">Atrás</button>
+              <button type="submit" class="btn btn--primary" id="submit-btn">Enviar denuncia</button>
+            </div>
+          </fieldset>
+        </form>
+
+        <!-- Confirmación (HU-003) -->
+        <div id="confirmation" class="confirmation" hidden>
+          <div class="confirmation__icon" aria-hidden="true">✅</div>
+          <h2>Denuncia recibida</h2>
+          <p>Tu denuncia se registró de forma anónima. Guarda este código en un lugar seguro:
+            es la <strong>única</strong> manera de consultar el estado de tu caso y <strong>no se puede recuperar</strong>.</p>
+          <div class="tracking-code" role="group" aria-label="Código de seguimiento">
+            <code id="tracking-code">—</code>
+            <button type="button" id="copy-code" class="btn btn--primary">Copiar código</button>
+          </div>
+          <p id="copy-feedback" class="copy-feedback" role="status" aria-live="polite"></p>
+          <p class="confirmation__hint">⚠️ Si pierdes este código, no podrás dar seguimiento a tu denuncia.</p>
+          <div class="confirmation__actions">
+            <a class="btn btn--ghost" href="#consultar" data-route="consultar">Consultar estado</a>
+            <button type="button" class="btn btn--ghost" id="new-report">Presentar otra denuncia</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CONSULTAR ===================== -->
+    <section id="consultar" class="view" data-view="consultar" hidden>
+      <div class="container container--narrow">
+        <h1 class="page-title">Consultar estado de una denuncia</h1>
+        <p class="page-lead">Ingresa el código de seguimiento que recibiste al enviar tu denuncia.</p>
+
+        <form id="track-form" class="track-form" novalidate>
+          <label class="field-label" for="track-input">Código de seguimiento</label>
+          <input type="text" id="track-input" name="codigo" placeholder="CS-XXXX-XXXX-XXXX"
+                 autocomplete="off" spellcheck="false" inputmode="text" />
+          <button type="submit" class="btn btn--primary">Consultar</button>
+        </form>
+
+        <div id="track-result" class="track-result" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- ===================== FAQ ===================== -->
+    <section id="faq" class="view" data-view="faq" hidden>
+      <div class="container container--narrow">
+        <h1 class="page-title">Preguntas frecuentes</h1>
+        <div class="accordion" id="accordion">
+          <div class="accordion__item">
+            <h2>
+              <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-1">
+                ¿Realmente es anónimo? <span class="accordion__icon" aria-hidden="true">+</span>
+              </button>
+            </h2>
+            <div class="accordion__panel" id="faq-1" hidden>
+              <p>Sí. CanalSeguro no solicita ningún dato personal ni crea cuentas. No registramos nombres,
+                correos ni teléfonos. Para reforzar el anonimato a nivel de red, recomendamos usar el Navegador Tor.</p>
+            </div>
+          </div>
+          <div class="accordion__item">
+            <h2>
+              <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-2">
+                ¿Qué pasa con los metadatos de mis archivos? <span class="accordion__icon" aria-hidden="true">+</span>
+              </button>
+            </h2>
+            <div class="accordion__panel" id="faq-2" hidden>
+              <p>Las imágenes se reprocesan en tu propio navegador antes de cualquier envío, lo que elimina
+                metadatos EXIF como la ubicación GPS, la fecha y el modelo del dispositivo. Aun así, te
+                recomendamos revisar que el contenido visible no te identifique.</p>
+            </div>
+          </div>
+          <div class="accordion__item">
+            <h2>
+              <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-3">
+                Perdí mi código de seguimiento, ¿pueden recuperarlo? <span class="accordion__icon" aria-hidden="true">+</span>
+              </button>
+            </h2>
+            <div class="accordion__panel" id="faq-3" hidden>
+              <p>No. El código es irrecuperable por diseño: esa es precisamente la garantía de que nadie
+                —ni siquiera el equipo— puede vincular una denuncia con una persona. Si lo pierdes, deberás
+                presentar una nueva denuncia.</p>
+            </div>
+          </div>
+          <div class="accordion__item">
+            <h2>
+              <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-4">
+                ¿Quién está detrás de CanalSeguro? <span class="accordion__icon" aria-hidden="true">+</span>
+              </button>
+            </h2>
+            <div class="accordion__panel" id="faq-4" hidden>
+              <p>Es un prototipo académico inspirado en plataformas de denuncia segura como SecureDrop y
+                GlobaLeaks. Su código fuente es público y auditable en GitHub.</p>
+            </div>
+          </div>
+          <div class="accordion__item">
+            <h2>
+              <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-5">
+                ¿Cómo me protejo mejor al denunciar? <span class="accordion__icon" aria-hidden="true">+</span>
+              </button>
+            </h2>
+            <div class="accordion__panel" id="faq-5" hidden>
+              <p>Usa el Navegador Tor, conéctate desde una red donde no puedas ser observado, no incluyas
+                datos que te identifiquen en la descripción y guarda tu código de seguimiento en un lugar seguro.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== ACERCA ===================== -->
+    <section id="acerca" class="view" data-view="acerca" hidden>
+      <div class="container container--narrow">
+        <h1 class="page-title">Acerca de CanalSeguro</h1>
+        <p class="page-lead">
+          CanalSeguro es un prototipo de canal de denuncia ciudadana cifrada que busca eliminar las
+          barreras de confianza que disuaden el reporte de irregularidades en contextos de alto riesgo.
+        </p>
+
+        <h2 class="section-title section-title--left">Principios</h2>
+        <ul class="principles">
+          <li><strong>Anonimato total e irreversible:</strong> ausencia de datos de identificación.</li>
+          <li><strong>Confidencialidad de la evidencia:</strong> supresión de metadatos en los archivos.</li>
+          <li><strong>Seguimiento sin identidad:</strong> código único e irrecuperable.</li>
+          <li><strong>Transparencia:</strong> código fuente público para auditoría independiente.</li>
+          <li><strong>Accesibilidad:</strong> interfaz clara, responsiva y con modo de alto contraste.</li>
+        </ul>
+
+        <div class="notice notice--info">
+          <strong>Aviso sobre el prototipo.</strong> Esta es una demostración funcional desarrollada con
+          fines académicos. El cifrado del lado del servidor y la recepción real de denuncias forman parte
+          del backlog del proyecto; en esta versión las denuncias se guardan únicamente en el
+          almacenamiento local de tu navegador para demostrar el flujo de extremo a extremo.
+        </div>
+
+        <h2 class="section-title section-title--left">Proyecto y metodología</h2>
+        <p class="page-lead">
+          Desarrollado de forma individual aplicando un enfoque ágil <strong>Kanban</strong> (con prácticas
+          puntuales de Scrum) para la asignatura Diseño de Aplicaciones Web. El trabajo se gestionó con un
+          tablero Kanban con límites de WIP, una bitácora diaria reflejada en los commits y seguimiento de
+          incidencias mediante GitHub Issues.
+        </p>
+        <p class="page-lead">
+          Código fuente: <a id="repo-link" href="https://github.com/josecr666/canalseguro" rel="noopener">github.com/josecr666/canalseguro</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p>🛡️ <strong>CanalSeguro</strong> — Denuncia ciudadana anónima y cifrada.</p>
+      <p class="site-footer__small">Prototipo académico. No almacena datos en servidores. Código abierto y auditable.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
